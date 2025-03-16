@@ -86,26 +86,16 @@ public class ShoppingListActivity extends AppCompatActivity {
             String description = itemDescriptionInput.getText().toString().trim();
 
             if (!name.isEmpty()) {
+                // Verificăm dacă lista are deja un ID valid
                 String itemId = database.child(listId).push().getKey();
                 ShoppingItem newItem = new ShoppingItem(itemId, name, description);
+
+                // Salvăm elementul în Firebase
                 database.child(listId).child(itemId).setValue(newItem);
 
                 itemNameInput.setText("");
                 itemDescriptionInput.setText("");
             }
-        });
-
-        // Generare QR Code pentru partajare
-        generateQRButton.setOnClickListener(v -> {
-            Intent intent = new Intent(ShoppingListActivity.this, QRGenerator.class);
-            intent.putExtra("LIST_ID", listId);
-            startActivity(intent);
-        });
-
-        // Scanare QR Code pentru a prelua o listă
-        scanQRButton.setOnClickListener(v -> {
-            Intent intent = new Intent(ShoppingListActivity.this, QRScannerActivity.class);
-            startActivity(intent);
         });
 
         // Logout
