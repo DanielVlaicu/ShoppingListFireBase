@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "970864630386",
+    "firebase_url": "https://shopinglistapk-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "shopinglistapk",
+    "storage_bucket": "shopinglistapk.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:970864630386:android:80be7893d2b2bf687a00eb",
+        "android_client_info": {
+          "package_name": "com.example.listadecumparaturi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "970864630386-6hga0oacatkavc7m8gpl0i8gci90kmai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaH9uIHRZcEP4KRCibKgVUCWv-s1l_olE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "970864630386-6hga0oacatkavc7m8gpl0i8gci90kmai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:970864630386:android:6581ecfc8a96c9e47a00eb",
+        "android_client_info": {
+          "package_name": "com.example.shoppinglistfire"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "970864630386-6hga0oacatkavc7m8gpl0i8gci90kmai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaH9uIHRZcEP4KRCibKgVUCWv-s1l_olE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "970864630386-6hga0oacatkavc7m8gpl0i8gci90kmai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
