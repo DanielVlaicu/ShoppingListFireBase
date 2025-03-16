@@ -3,22 +3,24 @@ package com.example.shoppinglistfire;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+
+
+
+
 public class QRScannerActivity extends AppCompatActivity {
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         startQRScanner();
@@ -26,26 +28,27 @@ public class QRScannerActivity extends AppCompatActivity {
 
     private void startQRScanner() {
         IntentIntegrator integrator = new IntentIntegrator(this);
-        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-        integrator.setPrompt("Scanează QR Code pentru a accesa lista");
-        integrator.setCameraId(0);
-        integrator.setOrientationLocked(false);
+        integrator.setPrompt("Scanează un cod QR");
         integrator.setBeepEnabled(true);
-        integrator.setBarcodeImageEnabled(true);
+        integrator.setOrientationLocked(false);
         integrator.initiateScan();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null && result.getContents() != null) {
-            String listId = result.getContents();
-            Intent intent = new Intent(this, ShoppingListActivity.class);
-            intent.putExtra("LIST_ID", listId);
+            String scannedListId = result.getContents();
+            Toast.makeText(this, "Listă accesată: " + scannedListId, Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(QRScannerActivity.this, ShoppingListActivity.class);
+            intent.putExtra("LIST_ID", scannedListId);
             startActivity(intent);
             finish();
         } else {
-            super.onActivityResult(requestCode, resultCode, data);
+            Toast.makeText(this, "Scanare anulată", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 }

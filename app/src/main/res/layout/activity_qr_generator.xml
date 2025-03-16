@@ -6,9 +6,9 @@
     android:orientation="vertical">
 
     <ImageView
-        android:id="@+id/qrImage"
+        android:id="@+id/qrCodeImage"
         android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:contentDescription="QR Code" />
+        android:layout_height="300dp"/>
+
 
 </LinearLayout>

@@ -23,16 +23,17 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 public class QRGenerator extends AppCompatActivity {
 
-    private ImageView qrImage;
+    private ImageView qrCodeImage;
+    private String listId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_generator);
 
-        qrImage = findViewById(R.id.qrImage);
+        qrCodeImage = findViewById(R.id.qrCodeImage);
+        listId = getIntent().getStringExtra("LIST_ID");
 
-        String listId = getIntent().getStringExtra("LIST_ID");
         if (listId != null) {
             generateQRCode(listId);
         }
@@ -41,8 +42,8 @@ public class QRGenerator extends AppCompatActivity {
     private void generateQRCode(String text) {
         try {
             BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-            Bitmap bitmap = barcodeEncoder.encodeBitmap(text, BarcodeFormat.QR_CODE, 600, 600);
-            qrImage.setImageBitmap(bitmap);
+            Bitmap bitmap = barcodeEncoder.encodeBitmap(text, BarcodeFormat.QR_CODE, 400, 400);
+            qrCodeImage.setImageBitmap(bitmap);
         } catch (WriterException e) {
             e.printStackTrace();
         }

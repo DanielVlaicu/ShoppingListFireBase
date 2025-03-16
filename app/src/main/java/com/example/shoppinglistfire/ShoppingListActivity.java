@@ -28,12 +28,12 @@ import java.util.List;
 public class ShoppingListActivity extends AppCompatActivity {
 
     private DatabaseReference database;
-    private List<String> items;
+    private List<ShoppingItem> items;
     private ListView listView;
-    private EditText itemInput;
+    private EditText itemNameInput, itemDescriptionInput;
     private Button addButton, generateQRButton, scanQRButton, logoutButton;
     private String listId;
-    private ArrayAdapter<String> adapter; // Adapter pentru ListView
+    private ShoppingListAdapter adapter; // Adapter personalizat
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,21 +43,21 @@ public class ShoppingListActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance().getReference("shoppingLists");
         items = new ArrayList<>();
         listView = findViewById(R.id.listView);
-        itemInput = findViewById(R.id.itemInput);
+        itemNameInput = findViewById(R.id.itemNameInput);
+        itemDescriptionInput = findViewById(R.id.itemDescriptionInput);
         addButton = findViewById(R.id.addButton);
         generateQRButton = findViewById(R.id.generateQRButton);
         scanQRButton = findViewById(R.id.scanQRButton);
         logoutButton = findViewById(R.id.logoutButton);
 
-        // Configurăm adapterul pentru ListView
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
-        listView.setAdapter(adapter); // Setăm adapterul
+        // Inițializăm adapterul și îl setăm la ListView
+        adapter = new ShoppingListAdapter(this, items, database, listId);
+        listView.setAdapter(adapter);
 
         // Obținem ID-ul listei din intent sau generăm unul nou
         listId = getIntent().getStringExtra("LIST_ID");
         if (listId == null) {
             listId = database.push().getKey();
-            database.child(listId).setValue(new ArrayList<>()); // Inițializăm lista în Firebase
         }
 
         // Ascultăm modificările din Firebase și actualizăm lista locală
@@ -66,29 +66,32 @@ public class ShoppingListActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 items.clear();
                 for (DataSnapshot child : snapshot.getChildren()) {
-                    // Adăugăm produsul în listă
-                    String item = child.getValue(String.class);
+                    ShoppingItem item = child.getValue(ShoppingItem.class);
                     if (item != null) {
                         items.add(item);
                     }
                 }
-                // Actualizăm UI-ul
-                adapter.notifyDataSetChanged(); // Notify pentru a reîmprospăta ListView
+                adapter.notifyDataSetChanged(); // Actualizăm UI-ul
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Poți adăuga un mesaj de eroare dacă vrei
                 Toast.makeText(ShoppingListActivity.this, "Eroare la încărcarea datelor.", Toast.LENGTH_SHORT).show();
             }
         });
 
         // Adăugăm un nou item în listă
         addButton.setOnClickListener(v -> {
-            String item = itemInput.getText().toString();
-            if (!item.isEmpty()) {
-                database.child(listId).push().setValue(item);
-                itemInput.setText(""); // Golim câmpul după adăugare
+            String name = itemNameInput.getText().toString().trim();
+            String description = itemDescriptionInput.getText().toString().trim();
+
+            if (!name.isEmpty()) {
+                String itemId = database.child(listId).push().getKey();
+                ShoppingItem newItem = new ShoppingItem(itemId, name, description);
+                database.child(listId).child(itemId).setValue(newItem);
+
+                itemNameInput.setText("");
+                itemDescriptionInput.setText("");
             }
         });
 

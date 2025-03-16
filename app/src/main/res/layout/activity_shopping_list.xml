@@ -5,40 +5,52 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Câmp pentru numele produsului -->
     <EditText
-        android:id="@+id/itemInput"
+        android:id="@+id/itemNameInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/adaug_un_produs" />
+        android:hint="Introdu numele produsului" />
 
+    <!-- Câmp pentru descrierea produsului -->
+    <EditText
+        android:id="@+id/itemDescriptionInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Introdu descrierea produsului" />
+
+    <!-- Buton pentru adăugare produs -->
     <Button
         android:id="@+id/addButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/adaug" />
+        android:text="Adaugă produs" />
 
+    <!-- ListView pentru afișarea produselor -->
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- Buton pentru generare cod QR -->
     <Button
         android:id="@+id/generateQRButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/genereaz_qr" />
+        android:text="Generează QR" />
 
+    <!-- Buton pentru scanare cod QR -->
     <Button
         android:id="@+id/scanQRButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/scaneaz_qr" />
+        android:text="Scanează QR" />
 
+    <!-- Buton pentru logout -->
     <Button
         android:id="@+id/logoutButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Logout" />
-
 </LinearLayout>

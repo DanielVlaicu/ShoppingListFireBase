@@ -3,14 +3,16 @@ package com.example.shoppinglistfire;
 public class ShoppingItem {
     private String id;
     private String name;
+    private String description;
 
     // Constructor gol necesar pentru Firebase
     public ShoppingItem() {}
 
     // Constructor cu parametri
-    public ShoppingItem(String id, String name) {
+    public ShoppingItem(String id, String name, String description) {
         this.id = id;
         this.name = name;
+        this.description = description;
     }
 
     // Getteri și setteri
@@ -28,5 +30,13 @@ public class ShoppingItem {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
