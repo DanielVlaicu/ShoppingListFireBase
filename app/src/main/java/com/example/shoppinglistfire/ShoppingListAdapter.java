@@ -82,7 +82,7 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingItem> {
                     item.setName(newName);
                     item.setDescription(newDescription);
 
-                    database.child(listId).child(item.getId()).setValue(item)
+                    database.child(listId).child("items").child(item.getId()).setValue(item)
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(context, "Produs actualizat!", Toast.LENGTH_SHORT).show();
                                 notifyDataSetChanged();
@@ -105,7 +105,7 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingItem> {
                 return;
             }
 
-            database.child(listId).child(item.getId()).removeValue()
+            database.child(listId).child("items").child(item.getId()).removeValue()
                     .addOnSuccessListener(aVoid -> {
                         // Ștergem în siguranță itemul din listă
                         for (int i = 0; i < items.size(); i++) {
