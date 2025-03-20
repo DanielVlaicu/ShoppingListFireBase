@@ -59,6 +59,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         listId = getIntent().getStringExtra("LIST_ID");
         Log.d("DEBUG", "listId citit din Intent: " + listId);
         if (listId == null) {
+            listId = database.push().getKey();
             Log.e("DEBUG", "listId este null! Verificați dacă este transmis corect!");
             listId = database.push().getKey(); // Generează un ID pentru listă dacă nu este specificat
             Log.d("DEBUG", "listId generat automat: " + listId); // Verifică dacă este generat corect
@@ -69,18 +70,24 @@ public class ShoppingListActivity extends AppCompatActivity {
         // Inițializăm adapterul după ce listId este setat corect
         adapter = new ShoppingListAdapter(this, items, database, listId);
         listView.setAdapter(adapter);
-
+        Log.d("DEBUG", "ListId dupa initializarea adapterului: " + listId);
 
         // Ascultăm modificările din Firebase și actualizăm lista locală
         database.child(listId).addValueEventListener(new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.d("DEBUG", "ListId onDataChange1" + listId);
                 Log.d("DEBUG", "onDataChange triggered");
-                items.clear();
+               items.clear();
+                Log.d("DEBUG", "ListId onDataChange2" + listId);
                 if (snapshot.exists()) {
+                    Log.d("DEBUG", "Snapshot children count: " + snapshot.getChildrenCount());
                     for (DataSnapshot child : snapshot.getChildren()) {
+                        Log.d("DEBUG", "Key: " + child.getKey() + ", Value: " + child.getValue());
                         ShoppingItem item = child.getValue(ShoppingItem.class);
                         if (item != null) {
+                            Log.d("DEBUG", "ListId onDataChange3" + listId);
                             Log.d("DEBUG", "Item citit: " + item.toString());
                             items.add(item);
                         }
@@ -110,7 +117,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
                 Log.d("DEBUG", "Salvăm item: listId=" + listId + ", itemId=" + itemId); // Debugging
 
-                database.child(userId).child(listId).child(itemId).setValue(newItem)
+                database.child(listId).child(itemId).setValue(newItem)
 
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
