@@ -1,21 +1,14 @@
 package com.example.shoppinglistfire;
-
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
 import java.util.ArrayList;
