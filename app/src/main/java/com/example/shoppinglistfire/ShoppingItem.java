@@ -1,5 +1,7 @@
 package com.example.shoppinglistfire;
 
+import androidx.annotation.NonNull;
+
 public class ShoppingItem {
     private String id;
     private String name;
@@ -39,4 +41,6 @@ public class ShoppingItem {
     public void setDescription(String description) {
         this.description = description;
     }
+
+
 }

@@ -2,7 +2,8 @@ package com.example.shoppinglistfire;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.text.InputType;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +12,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+
 import android.widget.ArrayAdapter;
 
+import androidx.annotation.NonNull;
+
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
 
 import java.util.List;
 
@@ -34,8 +36,9 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingItem> {
         this.listId = listId;
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item, parent, false);
         }
@@ -67,20 +70,27 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingItem> {
             builder.setView(dialogView);
 
             builder.setPositiveButton("Salvează", (dialog, which) -> {
+                if (listId == null || item.getId() == null) {
+                    Log.e("DEBUG", "listId sau itemId este null!"); // Debugging
+                    return;
+                }
+
                 String newName = nameInput.getText().toString().trim();
                 String newDescription = descriptionInput.getText().toString().trim();
 
-                if (!newName.isEmpty() && item.getId() != null) {
+                if (!newName.isEmpty()) {
                     item.setName(newName);
                     item.setDescription(newDescription);
 
-                    // Actualizare în Firebase
                     database.child(listId).child(item.getId()).setValue(item)
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(context, "Produs actualizat!", Toast.LENGTH_SHORT).show();
-                                notifyDataSetChanged(); // Actualizăm lista în UI
+                                notifyDataSetChanged();
                             })
-                            .addOnFailureListener(e -> Toast.makeText(context, "Eroare la actualizare!", Toast.LENGTH_SHORT).show());
+                            .addOnFailureListener(e -> {
+                                Log.e("DEBUG", "Eroare la actualizare!", e);
+                                Toast.makeText(context, "Eroare la actualizare!", Toast.LENGTH_SHORT).show();
+                            });
                 }
             });
 
@@ -90,15 +100,28 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingItem> {
 
         // Buton de ștergere
         deleteButton.setOnClickListener(v -> {
-            if (item.getId() != null) {
-                database.child(listId).child(item.getId()).removeValue()
-                        .addOnSuccessListener(aVoid -> {
-                            items.remove(position);
-                            notifyDataSetChanged(); // Actualizăm lista
-                            Toast.makeText(context, "Produs șters!", Toast.LENGTH_SHORT).show();
-                        })
-                        .addOnFailureListener(e -> Toast.makeText(context, "Eroare la ștergere!", Toast.LENGTH_SHORT).show());
+            if (listId == null || item.getId() == null) {
+                Log.e("DEBUG", "listId sau itemId este null!"); // Debugging
+                return;
             }
+
+            database.child(listId).child(item.getId()).removeValue()
+                    .addOnSuccessListener(aVoid -> {
+                        // Ștergem în siguranță itemul din listă
+                        for (int i = 0; i < items.size(); i++) {
+                            if (items.get(i).getId().equals(item.getId())) {
+                                items.remove(i);
+                                break; // Oprire după prima potrivire
+                            }
+                        }
+
+                        notifyDataSetChanged(); // Actualizare UI
+                        Toast.makeText(context, "Produs șters!", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("DEBUG", "Eroare la ștergere: ", e);
+                        Toast.makeText(context, "Eroare la ștergere!", Toast.LENGTH_SHORT).show();
+                    });
         });
 
         return convertView;
