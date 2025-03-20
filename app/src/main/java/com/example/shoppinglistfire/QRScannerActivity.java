@@ -21,6 +21,7 @@ import com.google.zxing.integration.android.IntentResult;
 
 public class QRScannerActivity extends AppCompatActivity {
 
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         startQRScanner();

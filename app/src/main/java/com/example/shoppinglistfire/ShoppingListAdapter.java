@@ -53,41 +53,39 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingItem> {
 
         // Buton de editare
         editButton.setOnClickListener(v -> {
-            if (item.getId() != null) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("Editează produsul");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle("Editează produsul");
 
-                // Creăm un input pentru nume și descriere
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_item, null);
-                EditText nameInput = dialogView.findViewById(R.id.editItemName);
-                EditText descriptionInput = dialogView.findViewById(R.id.editItemDescription);
+            // Creăm un input pentru nume și descriere
+            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_item, null);
+            EditText nameInput = dialogView.findViewById(R.id.editItemName);
+            EditText descriptionInput = dialogView.findViewById(R.id.editItemDescription);
 
-                nameInput.setText(item.getName());
-                descriptionInput.setText(item.getDescription());
+            nameInput.setText(item.getName());
+            descriptionInput.setText(item.getDescription());
 
-                builder.setView(dialogView);
+            builder.setView(dialogView);
 
-                builder.setPositiveButton("Salvează", (dialog, which) -> {
-                    String newName = nameInput.getText().toString().trim();
-                    String newDescription = descriptionInput.getText().toString().trim();
+            builder.setPositiveButton("Salvează", (dialog, which) -> {
+                String newName = nameInput.getText().toString().trim();
+                String newDescription = descriptionInput.getText().toString().trim();
 
-                    if (!newName.isEmpty()) {
-                        item.setName(newName);
-                        item.setDescription(newDescription);
+                if (!newName.isEmpty() && item.getId() != null) {
+                    item.setName(newName);
+                    item.setDescription(newDescription);
 
-                        // Actualizare în Firebase
-                        database.child(listId).child(item.getId()).setValue(item)
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(context, "Produs actualizat!", Toast.LENGTH_SHORT).show();
-                                    notifyDataSetChanged(); // Actualizăm lista în UI
-                                })
-                                .addOnFailureListener(e -> Toast.makeText(context, "Eroare la actualizare!", Toast.LENGTH_SHORT).show());
-                    }
-                });
+                    // Actualizare în Firebase
+                    database.child(listId).child(item.getId()).setValue(item)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(context, "Produs actualizat!", Toast.LENGTH_SHORT).show();
+                                notifyDataSetChanged(); // Actualizăm lista în UI
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(context, "Eroare la actualizare!", Toast.LENGTH_SHORT).show());
+                }
+            });
 
-                builder.setNegativeButton("Anulează", (dialog, which) -> dialog.cancel());
-                builder.show();
-            }
+            builder.setNegativeButton("Anulează", (dialog, which) -> dialog.cancel());
+            builder.show();
         });
 
         // Buton de ștergere
