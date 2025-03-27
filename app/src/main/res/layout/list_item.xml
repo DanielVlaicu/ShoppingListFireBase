@@ -1,42 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/itemName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:text="Nume produs" />
-
-    <TextView
-        android:id="@+id/itemDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Descriere produs" />
-
+    <!-- Container pentru detaliile produsului -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/productDetailsContainer"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/buttonContainer">
+
+        <TextView
+            android:id="@+id/itemName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:text="Nume produs" />
+
+        <TextView
+            android:id="@+id/itemDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:text="Descriere produs" />
+    </LinearLayout>
+
+    <!-- Container pentru butoane în partea dreaptă -->
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentEnd="true">
 
         <Button
             android:id="@+id/editButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Modifică" />
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/edit_prod" />
 
         <Button
             android:id="@+id/deleteButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Șterge" />
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/delete"/>
     </LinearLayout>
-</LinearLayout>
+
+</RelativeLayout>

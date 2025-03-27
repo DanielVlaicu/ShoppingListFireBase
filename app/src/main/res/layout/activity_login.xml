@@ -28,23 +28,44 @@
         android:hint="Parolă"
         android:inputType="textPassword" />
 
-    <Button
-        android:id="@+id/loginButton"
+
+    <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Autentificare" />
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp">
 
-    <Button
-        android:id="@+id/registerButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Înregistrare" />
+        <!-- Buton pentru generare cod QR -->
+        <Button
+            android:id="@+id/loginButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
 
-    <Button
-        android:id="@+id/signInButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableStart="@android:drawable/ic_dialog_email"
-        android:padding="10dp"
-        android:text="@string/sign_in_with_google" />
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/login" />
+        <Button
+            android:id="@+id/signInButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/google" />
+
+        <!-- Buton pentru scanare cod QR -->
+        <Button
+            android:id="@+id/registerButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/register" />
+
+
+
+
+    </LinearLayout>
+
+
+
+
 </LinearLayout>

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -111,29 +112,33 @@ public class ShoppingListActivity extends AppCompatActivity {
             }
         });
 
-        // Adăugăm un nou item în listă
         addButton.setOnClickListener(v -> {
-            String name = itemNameInput.getText().toString().trim();
-            String description = itemDescriptionInput.getText().toString().trim();
+            if (itemNameInput.getVisibility() == View.GONE) {
+                itemNameInput.setVisibility(View.VISIBLE);
+                itemDescriptionInput.setVisibility(View.VISIBLE);
+            } else {
+                String name = itemNameInput.getText().toString().trim();
+                String description = itemDescriptionInput.getText().toString().trim();
 
-            if (!name.isEmpty()) {
-                String itemId = database.push().getKey();
-                ShoppingItem newItem = new ShoppingItem(itemId, name, description);
+                if (!name.isEmpty()) {
+                    String itemId = database.push().getKey();
+                    ShoppingItem newItem = new ShoppingItem(itemId, name, description);
 
-                Log.d("DEBUG", "Salvăm item: listId=" + listId + ", itemId=" + itemId); // Debugging
+                    database.child(listId).child("items").child(itemId).setValue(newItem)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Log.d("DEBUG", "Item adăugat cu succes!");
+                                } else {
+                                    Log.e("DEBUG", "Eroare la salvare", task.getException());
+                                }
+                            });
 
-                database.child(listId).child("items").child(itemId).setValue(newItem)
-
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                Log.d("DEBUG", "Item adăugat cu succes!");
-                            } else {
-                                Log.e("DEBUG", "Eroare la salvare", task.getException());
-                            }
-                        });
-
-                itemNameInput.setText("");
-                itemDescriptionInput.setText("");
+                    // 🔹 Golește câmpurile și ascunde-le
+                    itemNameInput.setText("");
+                    itemDescriptionInput.setText("");
+                    itemNameInput.setVisibility(View.GONE);
+                    itemDescriptionInput.setVisibility(View.GONE);
+                }
             }
         });
 

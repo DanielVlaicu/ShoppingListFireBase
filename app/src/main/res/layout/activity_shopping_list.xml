@@ -1,57 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp"
-    android:background="@drawable/cartlist" >
+    android:background="@drawable/cartlist">
+
+    <!-- Buton pentru logout în colțul din dreapta sus -->
+    <Button
+        android:id="@+id/logoutButton"
+
+
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/logout" />
 
     <!-- Câmp pentru numele produsului -->
     <EditText
         android:id="@+id/itemNameInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Introdu numele produsului" />
+        android:hint="Introdu numele produsului"
+        android:layout_below="@id/logoutButton"
+        android:layout_marginTop="16dp" />
 
     <!-- Câmp pentru descrierea produsului -->
     <EditText
         android:id="@+id/itemDescriptionInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Introdu descrierea produsului" />
-
-    <!-- Buton pentru adăugare produs -->
-    <Button
-        android:id="@+id/addButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Adaugă produs" />
+        android:hint="Introdu descrierea produsului"
+        android:layout_below="@id/itemNameInput"
+        android:layout_marginTop="8dp" />
 
     <!-- ListView pentru afișarea produselor -->
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_above="@id/buttonContainer"
+        android:layout_below="@id/itemDescriptionInput"
+        android:layout_marginTop="8dp" />
 
-    <!-- Buton pentru generare cod QR -->
-    <Button
-        android:id="@+id/generateQRButton"
+
+
+    <!-- Container pentru butoanele din partea de jos -->
+    <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Generează QR" />
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp">
 
-    <!-- Buton pentru scanare cod QR -->
-    <Button
-        android:id="@+id/scanQRButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Scanează QR" />
+        <!-- Buton pentru generare cod QR -->
+        <Button
+            android:id="@+id/generateQRButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/qr_code" />
 
-    <!-- Buton pentru logout -->
-    <Button
-        android:id="@+id/logoutButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Logout" />
-</LinearLayout>
+        <!-- Buton pentru scanare cod QR -->
+        <Button
+            android:id="@+id/scanQRButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/scan" />
+
+        <Button
+            android:id="@+id/shareButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/share_2" />
+
+        <!-- Buton pentru adăugare produs -->
+        <Button
+            android:id="@+id/addButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/add" />
+
+    </LinearLayout>
+
+</RelativeLayout>
