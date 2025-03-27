@@ -26,10 +26,16 @@ public class ShoppingListActivity extends AppCompatActivity {
     private String listId;
     private ShoppingListAdapter adapter; // Adapter personalizat
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
+
+
+
+
+
 
         String userId = FirebaseAuth.getInstance().getUid();
         Log.d("DEBUG", "UserId: " + userId); // Verifică id-ul utilizatorului
@@ -49,11 +55,18 @@ public class ShoppingListActivity extends AppCompatActivity {
         logoutButton = findViewById(R.id.logoutButton);
 
 
-
         SharedPreferences sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
+        boolean inputsVisible = sharedPreferences.getBoolean("inputsVisible", false);
+
         listId = sharedPreferences.getString("LIST_ID", null);
 
-
+        if (inputsVisible) {
+            itemNameInput.setVisibility(View.VISIBLE);
+            itemDescriptionInput.setVisibility(View.VISIBLE);
+        } else {
+            itemNameInput.setVisibility(View.GONE);
+            itemDescriptionInput.setVisibility(View.GONE);
+        }
 
 
         // Obținem ID-ul listei din intent sau generăm unul nou
@@ -113,9 +126,13 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
 
         addButton.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+
             if (itemNameInput.getVisibility() == View.GONE) {
                 itemNameInput.setVisibility(View.VISIBLE);
                 itemDescriptionInput.setVisibility(View.VISIBLE);
+                editor.putBoolean("inputsVisible", true); // Salvează starea ca vizibile
             } else {
                 String name = itemNameInput.getText().toString().trim();
                 String description = itemDescriptionInput.getText().toString().trim();
@@ -133,15 +150,16 @@ public class ShoppingListActivity extends AppCompatActivity {
                                 }
                             });
 
-                    // 🔹 Golește câmpurile și ascunde-le
+                    // Golește câmpurile și ascunde-le
                     itemNameInput.setText("");
                     itemDescriptionInput.setText("");
                     itemNameInput.setVisibility(View.GONE);
                     itemDescriptionInput.setVisibility(View.GONE);
+                    editor.putBoolean("inputsVisible", false); // Salvează starea ca ascunse
                 }
             }
+            editor.apply(); // Aplică schimbările în SharedPreferences
         });
-
         // Generare QR Code pentru partajare
         generateQRButton.setOnClickListener(v -> {
             Intent intent = new Intent(ShoppingListActivity.this, QRGenerator.class);
