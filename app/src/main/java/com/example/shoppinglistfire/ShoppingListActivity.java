@@ -22,7 +22,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     private List<ShoppingItem> items;
     private ListView listView;
     private EditText itemNameInput, itemDescriptionInput;
-    private Button addButton, generateQRButton, scanQRButton, logoutButton;
+    private Button addButton, generateQRButton, scanQRButton, logoutButton, shareButton ;
     private String listId;
     private ShoppingListAdapter adapter; // Adapter personalizat
 
@@ -38,7 +38,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
 
         String userId = FirebaseAuth.getInstance().getUid();
-        Log.d("DEBUG", "UserId: " + userId); // Verifică id-ul utilizatorului
+        //Log.d("DEBUG", "UserId: " + userId); // Verifică id-ul utilizatorului
         if (userId == null) {
             startActivity(new Intent(ShoppingListActivity.this, LoginActivity.class));
             finish();
@@ -53,7 +53,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         generateQRButton = findViewById(R.id.generateQRButton);
         scanQRButton = findViewById(R.id.scanQRButton);
         logoutButton = findViewById(R.id.logoutButton);
-
+        shareButton = findViewById(R.id.shareButton);
 
         SharedPreferences sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
         boolean inputsVisible = sharedPreferences.getBoolean("inputsVisible", false);
@@ -71,7 +71,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         // Obținem ID-ul listei din intent sau generăm unul nou
         //listId = getIntent().getStringExtra("LIST_ID");
-       // Log.d("DEBUG", "listId citit din Intent: " + listId);
+        // Log.d("DEBUG", "listId citit din Intent: " + listId);
 
         if (listId == null) {
             listId = database.push().getKey();
@@ -80,7 +80,7 @@ public class ShoppingListActivity extends AppCompatActivity {
             sharedPreferences.edit().putString("LIST_ID", listId).apply();
 
             //listId = database.push().getKey(); // Generează un ID pentru listă dacă nu este specificat
-           // Log.d("DEBUG", "listId generat automat: " + listId); // Verifică dacă este generat corect
+            // Log.d("DEBUG", "listId generat automat: " + listId); // Verifică dacă este generat corect
         }
 
         Log.d("DEBUG", "ListId înainte de citire: " + listId);
@@ -98,7 +98,7 @@ public class ShoppingListActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Log.d("DEBUG", "ListId onDataChange1" + listId);
                 Log.d("DEBUG", "onDataChange triggered");
-               items.clear();
+                items.clear();
                 Log.d("DEBUG", "ListId onDataChange2" + listId);
                 if (snapshot.exists()) {
                     Log.d("DEBUG", "Snapshot children count: " + snapshot.getChildrenCount());
@@ -107,7 +107,7 @@ public class ShoppingListActivity extends AppCompatActivity {
                         ShoppingItem item = child.getValue(ShoppingItem.class);
                         if (item != null) {
                             Log.d("DEBUG", "ListId onDataChange3" + listId);
-                            Log.d("DEBUG", "Item citit: " + item.toString());
+                           Log.d("DEBUG", "Item citit: " + item.toString());
                             items.add(item);
                         }
                     }
@@ -179,5 +179,30 @@ public class ShoppingListActivity extends AppCompatActivity {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
+
+        shareButton.setOnClickListener(v -> shareShoppingList());
     }
+    private void shareShoppingList() {
+        if (items.isEmpty()) {
+            Toast.makeText(this, "Lista de cumpărături este goală!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StringBuilder shoppingListText = new StringBuilder("Lista mea de cumpărături:\n");
+        for (ShoppingItem item : items) {
+            shoppingListText.append("• ").append(item.getName());
+            if (!item.getDescription().isEmpty()) {
+                shoppingListText.append(" - ").append(item.getDescription());
+            }
+            shoppingListText.append("\n");
+        }
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Lista mea de cumpărături");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shoppingListText.toString());
+
+        startActivity(Intent.createChooser(shareIntent, "Partajează lista prin"));
+    }
+
 }
