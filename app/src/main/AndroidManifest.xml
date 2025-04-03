@@ -30,7 +30,15 @@
             android:exported="true" />
         <activity
             android:name=".ShoppingListActivity"
-            android:exported="true" />
+            android:exported="true" >
+          <!-- Intent Filter pentru Firebase Dynamic Links -->
+            <intent-filter>
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <data android:scheme="https" android:host="listadecumparaturi.page.link" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".LoginActivity"
             android:exported="true">

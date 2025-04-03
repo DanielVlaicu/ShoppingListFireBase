@@ -1,6 +1,9 @@
 package com.example.shoppinglistfire;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.util.Log;
@@ -16,6 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
+import com.google.firebase.dynamiclinks.DynamicLink;
+import com.google.firebase.dynamiclinks.ShortDynamicLink;
+
 public class ShoppingListActivity extends AppCompatActivity {
 
     private DatabaseReference database;
@@ -25,7 +32,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     private Button addButton, generateQRButton, scanQRButton, logoutButton, shareButton ;
     private String listId;
     private ShoppingListAdapter adapter; // Adapter personalizat
-
+    private static final String DYNAMIC_LINK_DOMAIN = "https://listadecumparaturi.page.link";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,14 +187,26 @@ public class ShoppingListActivity extends AppCompatActivity {
             finish();
         });
 
-        shareButton.setOnClickListener(v -> shareShoppingList());
+        shareButton.setOnClickListener(v -> showShareOptions());
     }
-    private void shareShoppingList() {
+    private void showShareOptions() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Alege metoda de partajare")
+                .setItems(new String[]{"Partajare ca text", "Partajare cu link"}, (dialog, which) -> {
+                    if (which == 0) {
+                        shareListAsText();
+                    } else if (which == 1) {
+                        shareListWithDynamicLink();
+                    }
+                })
+                .show();
+    }
+
+    private void shareListAsText() {
         if (items.isEmpty()) {
-            Toast.makeText(this, "Lista de cumpărături este goală!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Lista este goală!", Toast.LENGTH_SHORT).show();
             return;
         }
-
         StringBuilder shoppingListText = new StringBuilder("Lista mea de cumpărături:\n");
         for (ShoppingItem item : items) {
             shoppingListText.append("• ").append(item.getName());
@@ -196,13 +215,71 @@ public class ShoppingListActivity extends AppCompatActivity {
             }
             shoppingListText.append("\n");
         }
-
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Lista mea de cumpărături");
         shareIntent.putExtra(Intent.EXTRA_TEXT, shoppingListText.toString());
-
-        startActivity(Intent.createChooser(shareIntent, "Partajează lista prin"));
+        startActivity(Intent.createChooser(shareIntent, "Trimite lista prin"));
     }
 
+    private void shareListWithDynamicLink() {
+        String deepLink = DYNAMIC_LINK_DOMAIN + "?LIST_ID=" + listId;
+        FirebaseDynamicLinks.getInstance().createDynamicLink()
+                .setLink(Uri.parse(deepLink))
+                .setDomainUriPrefix(DYNAMIC_LINK_DOMAIN)
+                .setAndroidParameters(new DynamicLink.AndroidParameters.Builder().build())
+                .buildShortDynamicLink()
+                .addOnSuccessListener(shortDynamicLink -> {
+                    Uri shortLink = shortDynamicLink.getShortLink();
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.setType("text/plain");
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, "Deschide lista mea de cumpărături: " + shortLink.toString());
+                    startActivity(Intent.createChooser(shareIntent, "Trimite link-ul prin"));
+                })
+                .addOnFailureListener(e -> Log.e("DynamicLink", "Eroare generare link", e));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseDynamicLinks.getInstance()
+                .getDynamicLink(getIntent())
+                .addOnSuccessListener(this, pendingDynamicLinkData -> {
+                    if (pendingDynamicLinkData != null) {
+                        Uri deepLink = pendingDynamicLinkData.getLink();
+                        if (deepLink != null) {
+                            String receivedListId = deepLink.getQueryParameter("LIST_ID");
+                            if (receivedListId != null) {
+                                listId = receivedListId;
+                                SharedPreferences sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
+                                sharedPreferences.edit().putString("LIST_ID", listId).apply();
+
+                                // Adaugă utilizatorul curent la lista partajată
+                                String userId = FirebaseAuth.getInstance().getUid();
+                                if (userId != null) {
+                                    database.child(listId).child("participants").child(userId).setValue(true);
+                                }
+
+                                database.child(listId).child("items").addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        items.clear();
+                                        for (DataSnapshot child : snapshot.getChildren()) {
+                                            ShoppingItem item = child.getValue(ShoppingItem.class);
+                                            if (item != null) {
+                                                items.add(item);
+                                            }
+                                        }
+                                        adapter.notifyDataSetChanged();
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+                                        Log.e("Firebase", "Eroare la citirea listei partajate", error.toException());
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+    }
 }

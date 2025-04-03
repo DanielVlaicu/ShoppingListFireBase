@@ -43,5 +43,5 @@ dependencies {
     implementation libs.firebase.database
     implementation libs.play.services.auth
     implementation libs.zxing.android.embedded
-
+    implementation 'com.google.firebase:firebase-dynamic-links:21.2.0'
 }
