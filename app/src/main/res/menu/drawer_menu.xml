@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/my_lists"
+        android:title="Listele mele"
+        android:icon="@drawable/list_menu" />
+    <item
+        android:id="@+id/create_list"
+        android:title="Creează listă nouă"
+        android:icon="@drawable/add_list_menu" />
+</menu>
