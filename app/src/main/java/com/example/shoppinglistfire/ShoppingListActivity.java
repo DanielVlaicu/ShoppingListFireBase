@@ -172,8 +172,11 @@ public class ShoppingListActivity extends AppCompatActivity {
 
     /** Load user shopping lists into drawer dropdown */
     private void loadUserShoppingLists(LinearLayout listsBox, TextView btn) {
-        String uid = mAuth.getUid(); if (uid == null) return;
+        String uid = mAuth.getUid();
+        if (uid == null) return;
         listsBox.removeAllViews();
+        DrawerLayout drawer = findViewById(R.id.drawerLayout);
+
         rootRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -183,13 +186,65 @@ public class ShoppingListActivity extends AppCompatActivity {
                     for (DataSnapshot ls : snapshot.getChildren()) {
                         String name = ls.child("name").getValue(String.class);
                         String id   = ls.getKey();
+
+                        // each list row
                         TextView it = makeListItem(name, true);
+
+                        // normal click = select list
                         it.setOnClickListener(v -> {
                             listId = id;
                             sharedPreferences.edit().putString("LIST_ID", id).apply();
                             initializeAdapterWithList(id);
-                            ((DrawerLayout) findViewById(R.id.drawerLayout)).closeDrawer(GravityCompat.START);
+                            drawer.closeDrawer(GravityCompat.START);
                         });
+
+                        // long-press = delete list
+                        it.setOnLongClickListener(v -> {
+                            new AlertDialog.Builder(ShoppingListActivity.this)
+                                    .setTitle("Confirmare ștergere")
+                                    .setMessage("Ștergi lista '" + name + "'? Toate produsele vor fi pierdute.")
+                                    .setPositiveButton("Șterge", (d, w) -> {
+                                        // Șterge lista
+                                        rootRef.child(uid).child(id).removeValue()
+                                                .addOnSuccessListener(aVoid -> {
+                                                    Toast.makeText(ShoppingListActivity.this,
+                                                            "Lista '" + name + "' a fost ștearsă.",
+                                                            Toast.LENGTH_SHORT).show();
+                                                    // După ștergere, selectează următoarea listă
+                                                    rootRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snap) {
+                                                            if (snap.hasChildren()) {
+                                                                // ia primul ID rămas
+                                                                String nextId = snap.getChildren().iterator().next().getKey();
+                                                                listId = nextId;
+                                                                sharedPreferences.edit().putString("LIST_ID", nextId).apply();
+                                                                initializeAdapterWithList(nextId);
+                                                            } else {
+                                                                // dacă nu mai sunt liste
+                                                                items.clear();
+                                                                adapter.notifyDataSetChanged();
+                                                                listId = null;
+                                                                sharedPreferences.edit().remove("LIST_ID").apply();
+                                                            }
+                                                            // Reîmprospătează dropdown-ul
+                                                            loadUserShoppingLists(listsBox, btn);
+                                                        }
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError e) { }
+                                                    });
+                                                })
+                                                .addOnFailureListener(e ->
+                                                        Toast.makeText(ShoppingListActivity.this,
+                                                                "Nu s-a putut șterge lista.",
+                                                                Toast.LENGTH_SHORT).show()
+                                                );
+                                    })
+                                    .setNegativeButton("Anulează", null)
+                                    .show();
+                            return true;
+                        });
+
                         listsBox.addView(it);
                     }
                 }
@@ -199,7 +254,9 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("ShoppingList", "Error loading lists: " + error.getMessage());
+                Toast.makeText(ShoppingListActivity.this,
+                        "Eroare la încărcarea listelor: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
