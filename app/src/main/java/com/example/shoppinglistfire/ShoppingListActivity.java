@@ -17,6 +17,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -49,8 +51,6 @@ public class ShoppingListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
-
-        Log.d("ShoppingListActivity", "onCreate() started");
 
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
@@ -97,8 +97,11 @@ public class ShoppingListActivity extends AppCompatActivity {
             File file = new File(profilePath);
             if (file.exists() && file.length() > 0) {
                 try {
-                    profileImage.setImageURI(null);
-                    profileImage.setImageURI(Uri.fromFile(file));
+                    Glide.with(this)
+                            .load(file)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .into(profileImage);
                 } catch (Exception e) {
                     Log.e("ProfileImage", "Eroare la încărcare imagine", e);
                     profileImage.setImageResource(R.drawable.user);
@@ -111,6 +114,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         } else {
             profileImage.setImageResource(R.drawable.user);
         }
+
 
         boolean inputsVisible = sharedPreferences.getBoolean("inputsVisible", false);
         itemNameInput.setVisibility(inputsVisible ? View.VISIBLE : View.GONE);
@@ -192,18 +196,9 @@ public class ShoppingListActivity extends AppCompatActivity {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             if (inputStream == null) throw new IOException("InputStream este null");
 
-            // Eliminăm imaginea curentă din ImageView înainte de a o rescrie
-            profileImage.setImageURI(null);
-
             File file = new File(getFilesDir(), "profile.jpg");
 
-            // Șterge fișierul existent dacă există
-            if (file.exists()) {
-                boolean deleted = file.delete();
-                if (!deleted) {
-                    Log.w("SaveImage", "Fișierul vechi nu a putut fi șters");
-                }
-            }
+            if (file.exists()) file.delete();
 
             FileOutputStream outputStream = new FileOutputStream(file);
 
@@ -216,7 +211,11 @@ public class ShoppingListActivity extends AppCompatActivity {
             outputStream.close();
 
             if (file.exists() && file.length() > 0) {
-                profileImage.setImageURI(Uri.fromFile(file));
+                Glide.with(this)
+                        .load(file)
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .into(profileImage);
                 sharedPreferences.edit().putString("PROFILE_URI", file.getAbsolutePath()).apply();
             } else {
                 throw new IOException("Fișierul nu a fost creat corect");
