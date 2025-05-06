@@ -5,112 +5,147 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
+    <!-- ECRAN PRINCIPAL -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
         android:background="@drawable/cartlist">
 
-        <!-- Buton meniu în colțul stânga sus -->
         <Button
             android:id="@+id/menuButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentStart="true"
             android:layout_margin="8dp"
             android:background="@drawable/menu" />
 
-        <!-- Buton logout rămâne în dreapta sus -->
         <Button
             android:id="@+id/logoutButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentEnd="true"
             android:layout_margin="8dp"
             android:background="@drawable/logout" />
 
+        <EditText
+            android:id="@+id/itemNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/logoutButton"
+            android:layout_marginTop="16dp"
+            android:hint="Introdu numele produsului" />
 
+        <EditText
+            android:id="@+id/itemDescriptionInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/itemNameInput"
+            android:layout_marginTop="8dp"
+            android:hint="Introdu descrierea produsului" />
 
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_below="@id/itemDescriptionInput"
+            android:layout_above="@id/buttonContainer"
+            android:layout_marginTop="8dp" />
 
-    <!-- Câmp pentru numele produsului -->
-    <EditText
-        android:id="@+id/itemNameInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Introdu numele produsului"
-        android:layout_below="@id/logoutButton"
-        android:layout_marginTop="16dp" />
+        <LinearLayout
+            android:id="@+id/buttonContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="8dp">
 
-    <!-- Câmp pentru descrierea produsului -->
-    <EditText
-        android:id="@+id/itemDescriptionInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Introdu descrierea produsului"
-        android:layout_below="@id/itemNameInput"
-        android:layout_marginTop="8dp" />
+            <Button
+                android:id="@+id/generateQRButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/qr_code" />
 
-    <!-- ListView pentru afișarea produselor -->
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_above="@id/buttonContainer"
-        android:layout_below="@id/itemDescriptionInput"
-        android:layout_marginTop="8dp" />
+            <Button
+                android:id="@+id/scanQRButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/scan" />
 
+            <Button
+                android:id="@+id/shareButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/share_2" />
 
-
-    <!-- Container pentru butoanele din partea de jos -->
-    <LinearLayout
-        android:id="@+id/buttonContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="8dp">
-
-        <!-- Buton pentru generare cod QR -->
-        <Button
-            android:id="@+id/generateQRButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/qr_code" />
-
-        <!-- Buton pentru scanare cod QR -->
-        <Button
-            android:id="@+id/scanQRButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/scan" />
-
-        <Button
-            android:id="@+id/shareButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/share_2" />
-
-        <!-- Buton pentru adăugare produs -->
-        <Button
-            android:id="@+id/addButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/add" />
-
-    </LinearLayout>
-
+            <Button
+                android:id="@+id/addButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/add" />
+        </LinearLayout>
     </RelativeLayout>
 
-    <!-- Meniu lateral -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigationView"
-        android:layout_width="wrap_content"
+    <!-- SERTAR LATERAL CUSTOM -->
+    <LinearLayout
+        android:id="@+id/customDrawer"
+        android:layout_width="260dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@android:color/white"
-        app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/drawer_menu" />
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileImage"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/user"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
+
+        <Button
+            android:id="@+id/changeProfileButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="Schimbă poza" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="#DDDDDD" />
+
+        <TextView
+            android:id="@+id/btnMyLists"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:text="Listele mele ▼"
+            android:textColor="#000"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:id="@+id/listsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/btnCreateList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:padding="12dp"
+            android:text="Creează listă nouă"
+            android:textColor="#000"
+            android:textSize="16sp" />
+    </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>

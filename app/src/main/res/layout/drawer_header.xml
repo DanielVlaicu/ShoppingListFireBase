@@ -23,12 +23,6 @@
         android:layout_height="wrap_content"
         android:text="Schimbă poza" />
 
-    <!-- Containerul în care se vor adăuga dinamic liste -->
-    <LinearLayout
-        android:id="@+id/menuListContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        />
+
 
 </LinearLayout>

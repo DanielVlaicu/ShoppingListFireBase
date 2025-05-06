@@ -1,20 +1,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/create_list"
-        android:title="Creează listă nouă"
-        android:icon="@drawable/add_list_menu" />
-
-    <item
         android:id="@+id/my_lists"
         android:title="Listele mele"
         android:icon="@drawable/list_menu">
-        <!-- Acest submeniu va fi populat dinamic în cod -->
-        <menu>
-            <!-- lăsăm gol, va fi completat din cod -->
-        </menu>
+        <menu/>   <!-- submeniul se umple din cod -->
     </item>
 
-
+    <item
+        android:id="@+id/create_list"
+        android:title="Creează listă nouă"
+        android:icon="@drawable/add_list_menu" />
 
 </menu>
