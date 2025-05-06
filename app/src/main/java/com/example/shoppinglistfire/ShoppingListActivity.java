@@ -1,3 +1,4 @@
+// ShoppingListActivity.java – complet, cu dropdown funcțional pentru „Listele mele” și corecții finale
 package com.example.shoppinglistfire;
 
 import android.content.SharedPreferences;
@@ -6,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.content.Intent;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 
@@ -34,7 +36,7 @@ import java.util.List;
 public class ShoppingListActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private DatabaseReference database;
+    private DatabaseReference rootRef;
     private List<ShoppingItem> items;
     private ListView listView;
     private EditText itemNameInput, itemDescriptionInput;
@@ -47,7 +49,6 @@ public class ShoppingListActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> pickImageLauncher;
     private ImageView profileImage;
     private boolean isListExpanded = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +71,7 @@ public class ShoppingListActivity extends AppCompatActivity {
             return;
         }
 
-        database = FirebaseDatabase.getInstance().getReference("shoppingLists").child(userId);
+        rootRef = FirebaseDatabase.getInstance().getReference("shoppingLists");
         items = new ArrayList<>();
         listView = findViewById(R.id.listView);
         itemNameInput = findViewById(R.id.itemNameInput);
@@ -97,20 +98,11 @@ public class ShoppingListActivity extends AppCompatActivity {
         if (profilePath != null) {
             File file = new File(profilePath);
             if (file.exists() && file.length() > 0) {
-                try {
-                    Glide.with(this)
-                            .load(file)
-                            .skipMemoryCache(true)
-                            .diskCacheStrategy(DiskCacheStrategy.NONE)
-                            .into(profileImage);
-                } catch (Exception e) {
-                    Log.e("ProfileImage", "Eroare la încărcare imagine", e);
-                    profileImage.setImageResource(R.drawable.user);
-                    sharedPreferences.edit().remove("PROFILE_URI").apply();
-                }
-            } else {
-                profileImage.setImageResource(R.drawable.user);
-                sharedPreferences.edit().remove("PROFILE_URI").apply();
+                Glide.with(this)
+                        .load(file)
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .into(profileImage);
             }
         } else {
             profileImage.setImageResource(R.drawable.user);
@@ -122,7 +114,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         listId = sharedPreferences.getString("LIST_ID", null);
         if (listId != null) {
-            database.child(listId).addListenerForSingleValueEvent(new ValueEventListener() {
+            rootRef.child(userId).child(listId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
@@ -155,9 +147,9 @@ public class ShoppingListActivity extends AppCompatActivity {
                 String name = itemNameInput.getText().toString().trim();
                 String description = itemDescriptionInput.getText().toString().trim();
                 if (!name.isEmpty()) {
-                    String itemId = database.push().getKey();
+                    String itemId = rootRef.child(userId).push().getKey();
                     ShoppingItem newItem = new ShoppingItem(itemId, name, description);
-                    database.child(listId).child("items").child(itemId).setValue(newItem);
+                    rootRef.child(userId).child(listId).child("items").child(itemId).setValue(newItem);
                     itemNameInput.setText("");
                     itemDescriptionInput.setText("");
                     itemNameInput.setVisibility(View.GONE);
@@ -201,6 +193,7 @@ public class ShoppingListActivity extends AppCompatActivity {
             return false;
         });
     }
+
     private void saveImageLocally(Uri uri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
@@ -235,42 +228,14 @@ public class ShoppingListActivity extends AppCompatActivity {
             Toast.makeText(this, "Eroare la salvarea pozei", Toast.LENGTH_SHORT).show();
         }
     }
-
-
-
-
     private void initializeAdapterWithList(String id) {
-        adapter = new ShoppingListAdapter(this, items, database, id);
+        adapter = new ShoppingListAdapter(this, items, rootRef.child(mAuth.getUid()), id);
         listView.setAdapter(adapter);
         loadItemsFromFirebase(id);
     }
 
-    private void createNewList(String listName) {
-        String newListId = database.push().getKey();
-        if (newListId == null) return;
-
-        String userId = FirebaseAuth.getInstance().getUid();
-        if (userId == null) return;
-
-        database.child(newListId).child("name").setValue(listName);
-        database.child(newListId).child("participants").child(userId).setValue(true);
-
-        listId = newListId;
-        sharedPreferences.edit().putString("LIST_ID", listId).apply();
-
-        items.clear();
-        if (adapter != null) adapter.notifyDataSetChanged();
-        loadItemsFromFirebase(listId);
-
-        Toast.makeText(this, "Listă creată: " + listName, Toast.LENGTH_SHORT).show();
-    }
-
-    private void createAndInitializeNewList() {
-        createNewList("Listă implicită");
-    }
-
     private void loadItemsFromFirebase(String listId) {
-        database.child(listId).child("items").addValueEventListener(new ValueEventListener() {
+        rootRef.child(mAuth.getUid()).child(listId).child("items").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 items.clear();
@@ -288,16 +253,32 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
     }
 
+    private void createNewList(String listName) {
+        String newListId = rootRef.child(mAuth.getUid()).push().getKey();
+        if (newListId == null) return;
+
+        rootRef.child(mAuth.getUid()).child(newListId).child("name").setValue(listName);
+        rootRef.child(mAuth.getUid()).child(newListId).child("participants").child(mAuth.getUid()).setValue(true);
+
+        listId = newListId;
+        sharedPreferences.edit().putString("LIST_ID", listId).apply();
+
+        items.clear();
+        if (adapter != null) adapter.notifyDataSetChanged();
+        loadItemsFromFirebase(listId);
+
+        Toast.makeText(this, "Listă creată: " + listName, Toast.LENGTH_SHORT).show();
+    }
+
+    private void createAndInitializeNewList() {
+        createNewList("Listă implicită");
+    }
+
     private void loadUserShoppingLists() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) return;
+        String uid = mAuth.getUid();
+        if (uid == null) return;
 
-        String uid = currentUser.getUid();
-        Log.d("DEBUG", "UID pentru liste: " + uid);
-
-        DatabaseReference userListsRef = FirebaseDatabase.getInstance().getReference("shoppingLists").child(uid);
-
-        userListsRef.addValueEventListener(new ValueEventListener() {
+        rootRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 menuListContainer.removeAllViews();
@@ -312,13 +293,11 @@ public class ShoppingListActivity extends AppCompatActivity {
                         listItem.setTextSize(16);
                         listItem.setPadding(24, 16, 24, 16);
                         listItem.setTextColor(Color.BLACK);
-
                         listItem.setOnClickListener(v -> {
                             listId = id;
                             sharedPreferences.edit().putString("LIST_ID", listId).apply();
                             initializeAdapterWithList(listId);
                         });
-
                         menuListContainer.addView(listItem);
                     }
                 }
@@ -351,11 +330,8 @@ public class ShoppingListActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Alege metoda de partajare")
                 .setItems(new String[]{"Partajare ca text", "Partajare cu link"}, (dialog, which) -> {
-                    if (which == 0) {
-                        shareListAsText();
-                    } else {
-                        shareListWithDynamicLink();
-                    }
+                    if (which == 0) shareListAsText();
+                    else shareListWithDynamicLink();
                 }).show();
     }
 
