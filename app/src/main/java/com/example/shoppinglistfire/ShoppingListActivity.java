@@ -46,6 +46,8 @@ public class ShoppingListActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private ActivityResultLauncher<String> pickImageLauncher;
     private ImageView profileImage;
+    private boolean isListExpanded = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,11 +85,10 @@ public class ShoppingListActivity extends AppCompatActivity {
         profileImage = headerView.findViewById(R.id.profileImage);
         Button changeProfileButton = headerView.findViewById(R.id.changeProfileButton);
         menuListContainer = headerView.findViewById(R.id.menuListContainer);
+        menuListContainer.setVisibility(View.GONE);
 
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-            if (uri != null) {
-                saveImageLocally(uri);
-            }
+            if (uri != null) saveImageLocally(uri);
         });
 
         changeProfileButton.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
@@ -114,7 +115,6 @@ public class ShoppingListActivity extends AppCompatActivity {
         } else {
             profileImage.setImageResource(R.drawable.user);
         }
-
 
         boolean inputsVisible = sharedPreferences.getBoolean("inputsVisible", false);
         itemNameInput.setVisibility(inputsVisible ? View.VISIBLE : View.GONE);
@@ -152,15 +152,12 @@ public class ShoppingListActivity extends AppCompatActivity {
                     Toast.makeText(this, "Listă inexistentă!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 String name = itemNameInput.getText().toString().trim();
                 String description = itemDescriptionInput.getText().toString().trim();
-
                 if (!name.isEmpty()) {
                     String itemId = database.push().getKey();
                     ShoppingItem newItem = new ShoppingItem(itemId, name, description);
                     database.child(listId).child("items").child(itemId).setValue(newItem);
-
                     itemNameInput.setText("");
                     itemDescriptionInput.setText("");
                     itemNameInput.setVisibility(View.GONE);
@@ -189,8 +186,21 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
 
         shareButton.setOnClickListener(v -> showShareOptions());
-    }
 
+        navigationView.setNavigationItemSelectedListener(menuItem -> {
+            int id = menuItem.getItemId();
+            if (id == R.id.my_lists) {
+                isListExpanded = !isListExpanded;
+                menuListContainer.setVisibility(isListExpanded ? View.VISIBLE : View.GONE);
+                if (isListExpanded) loadUserShoppingLists();
+                return true;
+            } else if (id == R.id.create_list) {
+                showCreateListDialog();
+                return true;
+            }
+            return false;
+        });
+    }
     private void saveImageLocally(Uri uri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
