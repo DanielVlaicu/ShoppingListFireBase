@@ -1,4 +1,3 @@
-// ShoppingListActivity.java complet, cu salvare locală imagine și Firebase compatibil
 package com.example.shoppinglistfire;
 
 import android.content.SharedPreferences;
@@ -51,6 +50,8 @@ public class ShoppingListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
 
+        Log.d("ShoppingListActivity", "onCreate() started");
+
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
 
@@ -85,48 +86,30 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
-                try {
-                    InputStream inputStream = getContentResolver().openInputStream(uri);
-                    File file = new File(getFilesDir(), "profile.jpg");
-                    FileOutputStream outputStream = new FileOutputStream(file);
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = inputStream.read(buffer)) > 0) {
-                        outputStream.write(buffer, 0, len);
-                    }
-                    inputStream.close();
-                    outputStream.close();
-
-                    profileImage.setImageURI(Uri.fromFile(file));
-                    sharedPreferences.edit().putString("PROFILE_URI", file.getAbsolutePath()).apply();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, "Eroare la salvarea pozei", Toast.LENGTH_SHORT).show();
-                }
+                saveImageLocally(uri);
             }
         });
 
         changeProfileButton.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
 
-        navigationView.setNavigationItemSelectedListener(menuItem -> {
-            int id = menuItem.getItemId();
-            if (id == R.id.my_lists) {
-                loadUserShoppingLists();
-            } else if (id == R.id.create_list) {
-                showCreateListDialog();
-            }
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
-
         String profilePath = sharedPreferences.getString("PROFILE_URI", null);
         if (profilePath != null) {
             File file = new File(profilePath);
-            if (file.exists()) {
-                profileImage.setImageURI(Uri.fromFile(file));
+            if (file.exists() && file.length() > 0) {
+                try {
+                    profileImage.setImageURI(null);
+                    profileImage.setImageURI(Uri.fromFile(file));
+                } catch (Exception e) {
+                    Log.e("ProfileImage", "Eroare la încărcare imagine", e);
+                    profileImage.setImageResource(R.drawable.user);
+                    sharedPreferences.edit().remove("PROFILE_URI").apply();
+                }
             } else {
+                profileImage.setImageResource(R.drawable.user);
                 sharedPreferences.edit().remove("PROFILE_URI").apply();
             }
+        } else {
+            profileImage.setImageResource(R.drawable.user);
         }
 
         boolean inputsVisible = sharedPreferences.getBoolean("inputsVisible", false);
@@ -203,6 +186,49 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         shareButton.setOnClickListener(v -> showShareOptions());
     }
+
+    private void saveImageLocally(Uri uri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            if (inputStream == null) throw new IOException("InputStream este null");
+
+            // Eliminăm imaginea curentă din ImageView înainte de a o rescrie
+            profileImage.setImageURI(null);
+
+            File file = new File(getFilesDir(), "profile.jpg");
+
+            // Șterge fișierul existent dacă există
+            if (file.exists()) {
+                boolean deleted = file.delete();
+                if (!deleted) {
+                    Log.w("SaveImage", "Fișierul vechi nu a putut fi șters");
+                }
+            }
+
+            FileOutputStream outputStream = new FileOutputStream(file);
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, len);
+            }
+            inputStream.close();
+            outputStream.close();
+
+            if (file.exists() && file.length() > 0) {
+                profileImage.setImageURI(Uri.fromFile(file));
+                sharedPreferences.edit().putString("PROFILE_URI", file.getAbsolutePath()).apply();
+            } else {
+                throw new IOException("Fișierul nu a fost creat corect");
+            }
+        } catch (Exception e) {
+            Log.e("SaveImage", "Eroare la salvarea imaginii", e);
+            Toast.makeText(this, "Eroare la salvarea pozei", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
 
     private void initializeAdapterWithList(String id) {
         adapter = new ShoppingListAdapter(this, items, database, id);
