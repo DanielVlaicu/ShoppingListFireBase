@@ -1,3 +1,4 @@
+// ShoppingListActivity.java complet, cu salvare locală imagine și Firebase compatibil
 package com.example.shoppinglistfire;
 
 import android.content.SharedPreferences;
@@ -28,7 +29,6 @@ import com.google.firebase.dynamiclinks.ShortDynamicLink;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class ShoppingListActivity extends AppCompatActivity {
 
