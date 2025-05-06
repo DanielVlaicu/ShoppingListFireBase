@@ -6,7 +6,9 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -14,9 +16,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.activity.result.ActivityResultLauncher;
@@ -41,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+
 public class ShoppingListActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -60,6 +67,11 @@ public class ShoppingListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
+
+        //hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         // Initialize Firebase Auth and SharedPreferences
         mAuth = FirebaseAuth.getInstance();
@@ -265,10 +277,26 @@ public class ShoppingListActivity extends AppCompatActivity {
     private TextView makeListItem(String text, boolean enabled) {
         TextView tv = new TextView(this);
         tv.setText(text);
-        tv.setTextSize(15);
-        tv.setPadding(32, 12, 32, 12);
-        tv.setEnabled(enabled);
-        tv.setTextColor(enabled ? Color.BLACK : Color.GRAY);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);    // 18sp
+        int pad = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+        tv.setPadding(pad, pad/2, pad, pad/2);              // 16dp orizontal, 8dp vertical
+
+        tv.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        // ripple on click
+        TypedValue outValue = new TypedValue();
+        getTheme().resolveAttribute(
+                android.R.attr.selectableItemBackgroundBorderless, outValue, true);
+        tv.setBackgroundResource(outValue.resourceId);
+
+        // culoare text
+        @ColorInt int clr = ContextCompat.getColor(this,
+                enabled ? R.color.drawerText : android.R.color.darker_gray);
+        tv.setTextColor(clr);
+
         return tv;
     }
 

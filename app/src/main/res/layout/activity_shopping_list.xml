@@ -93,9 +93,10 @@
         android:layout_width="260dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@android:color/white"
+        android:background="@drawable/hartie_fundal"
         android:orientation="vertical"
         android:padding="16dp"
+
         android:fitsSystemWindows="true">
 
         <com.google.android.material.imageview.ShapeableImageView
@@ -125,27 +126,30 @@
             android:id="@+id/btnMyLists"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:text="Listele mele ▼"
-            android:textColor="#000"
-            android:textSize="16sp" />
+            android:padding="16dp"
+            android:text="Listele mele"
+            android:textColor="@color/drawerText"
+            android:textSize="18sp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
         <LinearLayout
             android:id="@+id/listsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:divider="@color/divider"
+            android:dividerHeight="1dp"/>
 
         <TextView
             android:id="@+id/btnCreateList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:padding="12dp"
+            android:padding="16dp"
             android:text="Creează listă nouă"
-            android:textColor="#000"
-            android:textSize="16sp" />
+            android:textColor="@color/drawerText"
+            android:textSize="18sp" />
     </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>
