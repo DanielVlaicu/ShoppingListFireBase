@@ -7,19 +7,15 @@ import android.os.Bundle;
 import android.content.Intent;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,8 +25,10 @@ import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class ShoppingListActivity extends AppCompatActivity {
 
@@ -44,7 +42,9 @@ public class ShoppingListActivity extends AppCompatActivity {
     private ShoppingListAdapter adapter;
     private static final String DYNAMIC_LINK_DOMAIN = "https://listadecumparaturi.page.link";
     private LinearLayout menuListContainer;
-    private SharedPreferences sharedPreferences ;
+    private SharedPreferences sharedPreferences;
+    private ActivityResultLauncher<String> pickImageLauncher;
+    private ImageView profileImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +52,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_shopping_list);
 
         mAuth = FirebaseAuth.getInstance();
+        sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
 
         DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
         NavigationView navigationView = findViewById(R.id.navigationView);
@@ -59,11 +60,9 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
 
-
-
         String userId = mAuth.getUid();
         if (userId == null) {
-            startActivity(new Intent(ShoppingListActivity.this, LoginActivity.class));
+            startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
         }
@@ -80,85 +79,80 @@ public class ShoppingListActivity extends AppCompatActivity {
         shareButton = findViewById(R.id.shareButton);
 
         View headerView = navigationView.getHeaderView(0);
-        ImageView profileImage = headerView.findViewById(R.id.profileImage);
+        profileImage = headerView.findViewById(R.id.profileImage);
         Button changeProfileButton = headerView.findViewById(R.id.changeProfileButton);
         menuListContainer = headerView.findViewById(R.id.menuListContainer);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
-        boolean inputsVisible = sharedPreferences.getBoolean("inputsVisible", false);
-        listId = sharedPreferences.getString("LIST_ID", null);
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(uri);
+                    File file = new File(getFilesDir(), "profile.jpg");
+                    FileOutputStream outputStream = new FileOutputStream(file);
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(buffer)) > 0) {
+                        outputStream.write(buffer, 0, len);
+                    }
+                    inputStream.close();
+                    outputStream.close();
+
+                    profileImage.setImageURI(Uri.fromFile(file));
+                    sharedPreferences.edit().putString("PROFILE_URI", file.getAbsolutePath()).apply();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Eroare la salvarea pozei", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        changeProfileButton.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
 
         navigationView.setNavigationItemSelectedListener(menuItem -> {
-
-
             int id = menuItem.getItemId();
-
             if (id == R.id.my_lists) {
-                Toast.makeText(this, "Listele mele", Toast.LENGTH_SHORT).show();
                 loadUserShoppingLists();
             } else if (id == R.id.create_list) {
-                Toast.makeText(this, "Creează o listă nouă", Toast.LENGTH_SHORT).show();
-            }else if (id == R.id.create_list) {
-                String newListId = database.push().getKey();
-                if (newListId == null) return false;
-
-                String listName = "Listă " + System.currentTimeMillis(); // Sau cere un nume de la user
-                database.child(newListId).child("name").setValue(listName);
-
-                listId = newListId;
-                sharedPreferences.edit().putString("LIST_ID", listId).apply();
-
-                items.clear();  // Golește lista veche de produse
-                adapter.notifyDataSetChanged();
-
-                Toast.makeText(this, "Listă creată: " + listName, Toast.LENGTH_SHORT).show();
+                showCreateListDialog();
             }
-
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
 
-
-
-
-        String profileUri = sharedPreferences.getString("PROFILE_URI", null);
-        if (profileUri != null) {
-            profileImage.setImageURI(Uri.parse(profileUri));
+        String profilePath = sharedPreferences.getString("PROFILE_URI", null);
+        if (profilePath != null) {
+            File file = new File(profilePath);
+            if (file.exists()) {
+                profileImage.setImageURI(Uri.fromFile(file));
+            } else {
+                sharedPreferences.edit().remove("PROFILE_URI").apply();
+            }
         }
 
+        boolean inputsVisible = sharedPreferences.getBoolean("inputsVisible", false);
         itemNameInput.setVisibility(inputsVisible ? View.VISIBLE : View.GONE);
         itemDescriptionInput.setVisibility(inputsVisible ? View.VISIBLE : View.GONE);
 
-        if (listId == null) {
-            listId = database.push().getKey();
-            sharedPreferences.edit().putString("LIST_ID", listId).apply();
-        }
-
-        adapter = new ShoppingListAdapter(this, items, database, listId);
-        listView.setAdapter(adapter);
-
-        database.child(listId).child("items").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                items.clear();
-                for (DataSnapshot child : snapshot.getChildren()) {
-                    ShoppingItem item = child.getValue(ShoppingItem.class);
-                    if (item != null) items.add(item);
+        listId = sharedPreferences.getString("LIST_ID", null);
+        if (listId != null) {
+            database.child(listId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        initializeAdapterWithList(listId);
+                    } else {
+                        createAndInitializeNewList();
+                    }
                 }
-                adapter.notifyDataSetChanged();
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ShoppingListActivity.this, "Eroare la încărcarea datelor.", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        changeProfileButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            startActivityForResult(intent, 1001);
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    createAndInitializeNewList();
+                }
+            });
+        } else {
+            createAndInitializeNewList();
+        }
 
         addButton.setOnClickListener(v -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -210,11 +204,62 @@ public class ShoppingListActivity extends AppCompatActivity {
         shareButton.setOnClickListener(v -> showShareOptions());
     }
 
+    private void initializeAdapterWithList(String id) {
+        adapter = new ShoppingListAdapter(this, items, database, id);
+        listView.setAdapter(adapter);
+        loadItemsFromFirebase(id);
+    }
+
+    private void createNewList(String listName) {
+        String newListId = database.push().getKey();
+        if (newListId == null) return;
+
+        String userId = FirebaseAuth.getInstance().getUid();
+        if (userId == null) return;
+
+        database.child(newListId).child("name").setValue(listName);
+        database.child(newListId).child("participants").child(userId).setValue(true);
+
+        listId = newListId;
+        sharedPreferences.edit().putString("LIST_ID", listId).apply();
+
+        items.clear();
+        if (adapter != null) adapter.notifyDataSetChanged();
+        loadItemsFromFirebase(listId);
+
+        Toast.makeText(this, "Listă creată: " + listName, Toast.LENGTH_SHORT).show();
+    }
+
+    private void createAndInitializeNewList() {
+        createNewList("Listă implicită");
+    }
+
+    private void loadItemsFromFirebase(String listId) {
+        database.child(listId).child("items").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                items.clear();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    ShoppingItem item = child.getValue(ShoppingItem.class);
+                    if (item != null) items.add(item);
+                }
+                if (adapter != null) adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ShoppingListActivity.this, "Eroare la încărcarea produselor.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void loadUserShoppingLists() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) return;
 
         String uid = currentUser.getUid();
+        Log.d("DEBUG", "UID pentru liste: " + uid);
+
         DatabaseReference userListsRef = FirebaseDatabase.getInstance().getReference("shoppingLists").child(uid);
 
         userListsRef.addValueEventListener(new ValueEventListener() {
@@ -224,18 +269,19 @@ public class ShoppingListActivity extends AppCompatActivity {
 
                 for (DataSnapshot listSnapshot : snapshot.getChildren()) {
                     String listName = listSnapshot.child("name").getValue(String.class);
-                    String listId = listSnapshot.getKey();
+                    String id = listSnapshot.getKey();
 
-                    if (listName != null) {
+                    if (listName != null && id != null) {
                         TextView listItem = new TextView(ShoppingListActivity.this);
                         listItem.setText(listName);
                         listItem.setTextSize(16);
                         listItem.setPadding(24, 16, 24, 16);
                         listItem.setTextColor(Color.BLACK);
 
-
                         listItem.setOnClickListener(v -> {
-                            Toast.makeText(ShoppingListActivity.this, "Ai ales: " + listName, Toast.LENGTH_SHORT).show();
+                            listId = id;
+                            sharedPreferences.edit().putString("LIST_ID", listId).apply();
+                            initializeAdapterWithList(listId);
                         });
 
                         menuListContainer.addView(listItem);
@@ -245,9 +291,25 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ShoppingListActivity.this, "Eroare la încărcarea listelor.", Toast.LENGTH_SHORT).show();
+                Log.e("Firebase", "Eroare la încărcarea listelor: " + error.getMessage());
+                Toast.makeText(ShoppingListActivity.this, "Eroare: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void showCreateListDialog() {
+        EditText input = new EditText(this);
+        input.setHint("Nume listă");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Creează listă nouă")
+                .setView(input)
+                .setPositiveButton("Creează", (dialog, which) -> {
+                    String listName = input.getText().toString().trim();
+                    if (!listName.isEmpty()) createNewList(listName);
+                })
+                .setNegativeButton("Anulează", null)
+                .show();
     }
 
     private void showShareOptions() {
@@ -296,57 +358,5 @@ public class ShoppingListActivity extends AppCompatActivity {
                     startActivity(Intent.createChooser(shareIntent, "Trimite link-ul prin"));
                 })
                 .addOnFailureListener(e -> Log.e("DynamicLink", "Eroare generare link", e));
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseDynamicLinks.getInstance()
-                .getDynamicLink(getIntent())
-                .addOnSuccessListener(this, pendingDynamicLinkData -> {
-                    if (pendingDynamicLinkData != null && pendingDynamicLinkData.getLink() != null) {
-                        Uri deepLink = pendingDynamicLinkData.getLink();
-                        String receivedListId = deepLink.getQueryParameter("LIST_ID");
-                        if (receivedListId != null) {
-                            listId = receivedListId;
-                            SharedPreferences sharedPreferences = getSharedPreferences("ShoppingAppPrefs", MODE_PRIVATE);
-                            sharedPreferences.edit().putString("LIST_ID", listId).apply();
-
-                            String userId = FirebaseAuth.getInstance().getUid();
-                            if (userId != null) {
-                                database.child(listId).child("participants").child(userId).setValue(true);
-                            }
-
-                            database.child(listId).child("items").addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                    items.clear();
-                                    for (DataSnapshot child : snapshot.getChildren()) {
-                                        ShoppingItem item = child.getValue(ShoppingItem.class);
-                                        if (item != null) items.add(item);
-                                    }
-                                    adapter = new ShoppingListAdapter(ShoppingListActivity.this, items, database, listId);
-                                    listView.setAdapter(adapter);
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) {
-                                    Log.e("Firebase", "Eroare la citirea listei partajate", error.toException());
-                                }
-                            });
-                        }
-                    }
-                });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1001 && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri selectedImageUri = data.getData();
-            ImageView profileImage = findViewById(R.id.profileImage);
-            profileImage.setImageURI(selectedImageUri);
-            sharedPreferences.edit().putString("PROFILE_URI", selectedImageUri.toString()).apply();
-        }
     }
 }
