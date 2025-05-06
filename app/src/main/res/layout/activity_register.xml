@@ -1,30 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@drawable/cartregister">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/emailInput"
+    <!-- Imaginea de fundal, fără distorsiuni -->
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email" />
+        android:layout_height="match_parent"
+        android:src="@drawable/fundal2"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
 
-    <EditText
-        android:id="@+id/passwordInput"
+    <!-- Conținutul tău original, fără android:background -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Parolă"
-        android:inputType="textPassword" />
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/registerButton"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="120dp"
-        android:background="@drawable/register" />
+        <EditText
+            android:id="@+id/emailInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email" />
 
-</LinearLayout>
+        <EditText
+            android:id="@+id/passwordInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Parolă"
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/registerButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="120dp"
+            android:background="@drawable/register" />
+
+    </LinearLayout>
+</FrameLayout>

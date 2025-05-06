@@ -6,11 +6,22 @@
     android:layout_height="match_parent">
 
     <!-- ECRAN PRINCIPAL -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/fundal5"
+            android:scaleType="centerCrop"
+            android:contentDescription="@null" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
-        android:background="@drawable/cartlist">
+        android:background="@android:color/transparent">
 
         <Button
             android:id="@+id/menuButton"
@@ -86,6 +97,8 @@
                 android:background="@drawable/add" />
         </LinearLayout>
     </RelativeLayout>
+
+</FrameLayout>
 
     <!-- SERTAR LATERAL CUSTOM -->
     <LinearLayout

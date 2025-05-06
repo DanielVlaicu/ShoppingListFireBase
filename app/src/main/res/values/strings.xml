@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ShoppingListFire</string>
+    <string name="app_name">Grocery List</string>
     <string name="app_logo">App Logo</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="shopping_list">Shopping List</string>

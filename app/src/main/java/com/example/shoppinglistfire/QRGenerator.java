@@ -17,6 +17,11 @@ public class QRGenerator extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_generator);
 
+        //hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         qrCodeImage = findViewById(R.id.qrCodeImage);
         listId = getIntent().getStringExtra("LIST_ID");
 

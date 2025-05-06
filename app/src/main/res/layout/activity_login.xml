@@ -1,71 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@drawable/cartlogin">
+    android:layout_height="match_parent">
 
+    <!-- Fundal păstrat proporțional, fără distorsiuni -->
     <ImageView
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:src="@drawable/ic_launcher_foreground"
-        android:contentDescription="@string/app_logo"
-        android:layout_gravity="center"/>
-
-
-    <EditText
-        android:id="@+id/emailInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email" />
+        android:layout_height="match_parent"
+        android:src="@drawable/fundal1"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
 
-    <EditText
-        android:id="@+id/passwordInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Parolă"
-        android:inputType="textPassword" />
-
-
+    <!-- Conținutul tău, cu fundal transparent -->
     <LinearLayout
-        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         android:gravity="center"
-        android:padding="8dp">
+        android:padding="16dp"
+        android:background="@android:color/transparent">
 
-        <!-- Buton pentru generare cod QR -->
-        <Button
-            android:id="@+id/loginButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+        <EditText
+            android:id="@+id/emailInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email" />
 
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/login" />
-        <Button
-            android:id="@+id/signInButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/google" />
+        <EditText
+            android:id="@+id/passwordInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Parolă"
+            android:inputType="textPassword" />
 
-        <!-- Buton pentru scanare cod QR -->
-        <Button
-            android:id="@+id/registerButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/register" />
+        <LinearLayout
+            android:id="@+id/buttonContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="8dp">
 
+            <Button
+                android:id="@+id/loginButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/login" />
 
+            <Button
+                android:id="@+id/signInButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/google" />
 
+            <Button
+                android:id="@+id/registerButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/register" />
 
+        </LinearLayout>
     </LinearLayout>
-
-
-
-
-</LinearLayout>
+</FrameLayout>
