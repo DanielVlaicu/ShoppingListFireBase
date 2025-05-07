@@ -1,14 +1,20 @@
 package com.example.shoppinglistfire;
+
+
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.graphics.Bitmap;
 import android.widget.ImageView;
+
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 public class QRGenerator extends AppCompatActivity {
-
+    private static final String DYNAMIC_LINK_DOMAIN = "https://listadecumparaturi.page.link";
     private ImageView qrCodeImage;
     private String listId;
 
@@ -24,19 +30,20 @@ public class QRGenerator extends AppCompatActivity {
 
         qrCodeImage = findViewById(R.id.qrCodeImage);
         listId = getIntent().getStringExtra("LIST_ID");
+        String ownerId = FirebaseAuth.getInstance().getUid();
 
-        if (listId != null) {
-            generateQRCode(listId);
-        }
-    }
-
-    private void generateQRCode(String text) {
-        try {
-            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-            Bitmap bitmap = barcodeEncoder.encodeBitmap(text, BarcodeFormat.QR_CODE, 400, 400);
-            qrCodeImage.setImageBitmap(bitmap);
-        } catch (WriterException e) {
-            e.printStackTrace();
+        if (ownerId != null && listId != null) {
+            String deepLink = DYNAMIC_LINK_DOMAIN
+                    + "?OWNER_ID=" + ownerId
+                    + "&LIST_ID=" + listId;
+            try {
+                Bitmap bmp = new BarcodeEncoder()
+                        .encodeBitmap(deepLink,
+                                BarcodeFormat.QR_CODE, 400, 400);
+                qrCodeImage.setImageBitmap(bmp);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

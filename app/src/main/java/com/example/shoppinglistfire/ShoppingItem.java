@@ -8,7 +8,8 @@ public class ShoppingItem {
     private String description;
 
     // Constructor gol necesar pentru Firebase
-    public ShoppingItem() {}
+    public ShoppingItem() {
+    }
 
     // Constructor cu parametri
     public ShoppingItem(String id, String name, String description) {
